@@ -5,6 +5,7 @@ Simple logging library I made for myself. Will print to the consol and a results
 # Usage
 
 //Wipe Logger File
+
 Logger::WipeFile();
 
 LogInfo << "Info Print";
