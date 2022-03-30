@@ -6,13 +6,13 @@ Simple logging library I made for myself. Will print to the consol and a results
 
 //Wipe Logger File
 
-Logger::WipeFile();
+Logger::Init();
 
-LogInfo << "Info Print";
+Log(Info) << "Info Print";
 
-LogWarn << "Warn Print";
+Log(Warn) << "Warn Print";
 
-LogError << "Error Print";
+Log(Error) << "Error Print";
 
 bool isTrue = false;
-LogAssert( isTrue ) << "isTrue was not true. Trigger program crash for debugger.";
+Assert( isTrue ) << "isTrue was not true. Trigger program crash for debugger.";

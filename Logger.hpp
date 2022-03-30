@@ -1,77 +1,56 @@
 #pragma once
-#ifndef LOGGER_HPP
-#define LOGGER_HPP
-
-//Currently the logger is thread safe
 
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
-
-#define LOF_FILE_NAME "results.log"
-std::string GetDateAndTime();
-std::string HexDump(std::vector<uint8_t>& data);
-std::string DecDump(std::vector<uint8_t>& data);
+#include <streambuf>
+#include <ostream>
+#include <ios>
 
 class Logger {
 public:
-    static void WipeFile() {
-        FILE* log_file;
-        //Create an empty file for output operations. If a file with the same name already exists, its contents are discarded and the file is treated as a new empty file.
-        log_file = fopen(LOF_FILE_NAME, "w");
-        if(log_file == NULL)
-        {
-            std::string error_msg = "[ERROR] Could not open log file to write to.\n";
-            fprintf(stdout, "%s", error_msg.c_str());
-            fflush(stdout);  
-        } else {
-            fclose(log_file);
-        }
-    }
-
-    Logger() {}
-    ~Logger();
-
-    enum LogLevel {
-        LOG_DEBUG,
-        LOG_INFO,
-        LOG_WARN,
-        LOG_ERROR,
-        LOG_ASSERT,
+    enum Level {
+        Debug = 0,
+        Info = 1,
+        Warn = 2,
+        Error = 3,
+        Assertion = 4,
     };
 
-    std::ostringstream& SetMessage(LogLevel type,std::string file, int line);
+    static void Init();
+
+    Logger(Level type,std::string file, int line);
+    ~Logger();
+
+    void operator<< (const char* str);
+    void operator<< (std::string str);
+    void operator<< (bool val);
+    void operator<< (short val);
+    void operator<< (unsigned short val);
+    void operator<< (int val);
+    void operator<< (unsigned int val);
+    void operator<< (long val);
+    void operator<< (unsigned long val);
+    void operator<< (long long val);
+    void operator<< (unsigned long long val);
+    void operator<< (float val);
+    void operator<< (double val);
+    void operator<< (long double val);
+    void operator<< (void* val);
+    void operator<< (std::streambuf* sb );
+    void operator<< (std::ostream& (*pf)(std::ostream&));
+    void operator<< (std::ios& (*pf)(std::ios&));
+    void operator<< (std::ios_base& (*pf)(std::ios_base&));
 
 private:
-    bool terminate = false;
-    std::ostringstream message; 
-
-    Logger(const Logger&);
-    Logger& operator =(const Logger&);
-
-    std::string LevelToString(LogLevel level);    
+    bool m_terminate = false;
+    std::ostringstream m_message; 
+    Level m_level = Level::Debug;
 };
 
-#ifdef DEBUG_BUILD
-#define     LogDebug    if(true) \
-                            Logger().SetMessage(Logger::LOG_DEBUG,__FILE__, __LINE__)
-#else
-#define     LogDebug    if(false) \
-                            Logger().SetMessage(Logger::LOG_DEBUG,__FILE__, __LINE__)     //This will never be used and is only here to allow code to compiler without DEBUG defined.
-#endif //DEBUG_BUILD
+#define     Log(level)    if(true) \
+                                Logger(Logger::Level::level,__FILE__, __LINE__)
 
-#define     LogInfo     if(true) \
-                            Logger().SetMessage(Logger::LOG_INFO,__FILE__, __LINE__)
-
-#define     LogWarn     if(true) \
-                            Logger().SetMessage(Logger::LOG_WARN,__FILE__, __LINE__)
-
-#define     LogError    if(true) \
-                            Logger().SetMessage(Logger::LOG_ERROR,__FILE__, __LINE__)
-
-#define     LogAssert(assertion) if(!assertion) \
-                                    Logger().SetMessage(Logger::LOG_ASSERT,__FILE__, __LINE__)
-
-
-#endif //LOGGER_HPP                        
+#define     Assert(assertion) if(!(assertion)) \
+                                Logger(Logger::Level::Assertion,__FILE__, __LINE__)
